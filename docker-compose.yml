@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # PostgreSQL with pgvector extension
+  postgres:
+    image: ankane/pgvector:latest
+    container_name: repeatnomore_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_pgvector.sql:/docker-entrypoint-initdb.d/init_pgvector.sql:ro
+    environment:
+      - POSTGRES_DB=repeatnomore
+      - POSTGRES_USER=repeatnomore
+      - POSTGRES_PASSWORD=repeatnomore
+    networks:
+      - repeatnomore_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repeatnomore -d repeatnomore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RepeatNoMore Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: repeatnomore_app
+    ports:
+      - "8080:8080"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=repeatnomore
+      - POSTGRES_USER=repeatnomore
+      - POSTGRES_PASSWORD=repeatnomore
+      - LOG_LEVEL=INFO
+      # Startup indexing settings
+      - REINDEX_ON_STARTUP=true
+      - REINDEX_RESET=false
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+      - ./knowledge_base:/app/knowledge_base
+      - ./tests:/app/tests
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - repeatnomore_network
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+
+  # Discord Bot Service
+  discord-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.discord
+    container_name: repeatnomore_discord
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=repeatnomore
+      - POSTGRES_USER=repeatnomore
+      - POSTGRES_PASSWORD=repeatnomore
+      - LOG_LEVEL=INFO
+    env_file:
+      - .env
+    volumes:
+      - ./app:/app/app
+      - ./knowledge_base:/app/knowledge_base
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - repeatnomore_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  repeatnomore_network:
+    driver: bridge

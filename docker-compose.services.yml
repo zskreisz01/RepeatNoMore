@@ -1,0 +1,59 @@
+version: '3.8'
+
+# Simplified docker-compose for supporting services (PostgreSQL + Ollama)
+# Use this for local development
+# Run the app locally with: uvicorn app.main:app --reload --port 8080
+
+services:
+  # PostgreSQL with pgvector extension
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: repeatnomore_postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: repeatnomore
+      POSTGRES_PASSWORD: repeatnomore
+      POSTGRES_DB: repeatnomore
+    networks:
+      - repeatnomore_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U repeatnomore"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Ollama LLM Service (optional - only if using local LLM)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: repeatnomore_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - repeatnomore_network
+    restart: unless-stopped
+    profiles:
+      - ollama  # Only start with: docker-compose --profile ollama up
+    # Uncomment for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+volumes:
+  postgres_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  repeatnomore_network:
+    driver: bridge
