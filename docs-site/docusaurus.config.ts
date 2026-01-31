@@ -12,9 +12,9 @@ const config: Config = {
   },
 
   // GitHub Pages deployment config
-  url: 'https://zskreisz.github.io',
+  url: 'https://zskreisz01.github.io',
   baseUrl: '/RepeatNoMore/',
-  organizationName: 'zskreisz',
+  organizationName: 'zskreisz01',
   projectName: 'RepeatNoMore',
   deploymentBranch: 'gh-pages',
   trailingSlash: false,

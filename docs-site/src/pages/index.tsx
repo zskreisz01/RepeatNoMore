@@ -36,7 +36,7 @@ function HeroSection() {
           <Link
             className="button button--outline button--lg button--secondary"
             style={{marginLeft: '1rem'}}
-            href="https://github.com/zskreisz/RepeatNoMore">
+            href="https://github.com/zskreisz01/RepeatNoMore">
             ⭐ Star on GitHub
           </Link>
         </div>
@@ -232,7 +232,7 @@ function GetStartedSection() {
         <div className={styles.setupCode}>
           <pre>
 {`# Clone and configure
-git clone https://github.com/zskreisz/RepeatNoMore
+git clone https://github.com/zskreisz01/RepeatNoMore
 cd RepeatNoMore
 cp .env.example .env
 
@@ -249,7 +249,7 @@ docker-compose up -d`}
           </Link>
           <Link
             className="button button--outline button--primary button--lg"
-            href="https://github.com/zskreisz/RepeatNoMore/fork"
+            href="https://github.com/zskreisz01/RepeatNoMore/fork"
             style={{marginLeft: '1rem'}}>
             🍴 Fork & Customize
           </Link>
